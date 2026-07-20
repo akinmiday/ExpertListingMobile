@@ -21,11 +21,8 @@ This is the mobile app for Expert Listing. It uses React Native and Expo.
 npm install
 ```
 
-**Step 2.** Create the environment file.
-```bash
-cp .env.example .env
-```
-Open the `.env` file. Set `EXPO_PUBLIC_BACKEND_URL` to your server address.
+**Step 2.** Configure the environment file.
+Verify that the `.env` file exists in the root folder, and set `EXPO_PUBLIC_BACKEND_URL` to your backend server URL.
 
 **Step 3.** Start the Expo server.
 ```bash
@@ -52,21 +49,15 @@ EXPO_PUBLIC_BACKEND_URL=http://localhost:3000
 
 | Screen | Description |
 |--------|-------------|
-| **Feed** | The main feed. Shows posts from the backend. |
-| **Search** | Placeholder. Not built. |
-| **List** | Create a new post. Sends data to `POST /posts`. |
-| **Notifications** | Placeholder. Not built. |
-| **Profile** | Placeholder. Not built. |
+| **Feed** | The main feed. Shows posts from the backend and supports sidebar filter drawers. |
+| **Search** | Fully functional debounced search bar. Queries backend by body text, locations, or usernames. |
+| **List** | Create new property listings, requests, or general posts directly onto the backend. |
+| **Notifications** | Displays mock follow, comment, and like feeds. Supports read status toggles and delete all flows. |
+| **Profile** | Settings dashboard for password updates, legal policy modals, and secure logout triggers. |
 
 ---
 
 ## Features
-
-### Feed Tabs
-
-Three tabs appear at the top of the feed: **Property**, **General**, and **Request**.
-
-Tap a tab to filter the feed. The app sends `GET /posts?tab=<type>` to the server. The feed updates with the result.
 
 ### Post Card
 
@@ -115,7 +106,6 @@ src/
     client.ts           — API calls, URL setup, and client cache
   components/
     CommentsModal.tsx
-    FeedTabs.tsx
     Header.tsx
     PostCard.tsx        — Uses React.memo for scroll performance
     SidebarContent.tsx
@@ -187,3 +177,29 @@ Several features and screens that were not explicitly detailed in the Figma file
 
 ### 5. Profile Screen
 - A dashboard screen for settings, user roles, simulated passwords change modals, terms and conditions view overlays, and logout safety prompts.
+
+---
+
+## EAS Build Configuration (Android APK)
+
+We have initialized and configured EAS Build for this project.
+
+### 1. Build Profile
+The `eas.json` file is configured with the following profiles:
+- **`preview`**: Generates a direct installable `.apk` file for testing on physical devices or emulators, and defaults to standard local API endpoints (`http://localhost:3000`).
+- **`production`**: Generates a direct installable `.apk` file for release builds and links to your production API endpoints.
+
+### 2. Environment Variables Configuration
+The `eas.json` contains a specific `env` configuration to embed `EXPO_PUBLIC_BACKEND_URL` directly into the built binary during EAS compilation:
+- To customize the production backend endpoint, edit the `EXPO_PUBLIC_BACKEND_URL` value inside the `"production"` block of your `eas.json` before building.
+
+### 3. Run EAS Build Commands
+Make sure you have global `eas-cli` installed and are logged in, then run:
+- **To build a preview Android APK**:
+  ```bash
+  eas build --platform android --profile preview
+  ```
+- **To build a production Android APK**:
+  ```bash
+  eas build --platform android --profile production
+  ```
