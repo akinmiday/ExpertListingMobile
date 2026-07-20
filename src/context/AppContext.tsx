@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Post, Comment, fetchPostsFromAPI, toggleLikePost, fetchCommentsFromAPI, addCommentToAPI, addPostToAPI } from '../api/client';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { Post, Comment, fetchPostsFromAPI, toggleLikePost, fetchCommentsFromAPI, addCommentToAPI, addPostToAPI, deletePostAPI } from '../api/client';
 
 export type FeedTab = 'Property' | 'General' | 'Request' | 'All';
 export type ListingType = 'For Rent' | 'For Sale' | 'All';
@@ -27,6 +27,7 @@ interface AppContextType {
   handleAddComment: (postId: string, text: string) => Promise<Comment | null>;
   handleAddPost: (body: string, location: string, tab: FeedTab, listingType?: 'For Rent' | 'For Sale', imageUrl?: string) => Promise<void>;
   refreshPosts: () => Promise<void>;
+  handleDeletePost: (postId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -42,8 +43,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     search: undefined
   });
 
-  const loadPosts = async (currentFilters: Filters) => {
+  const loadPosts = useCallback(async (currentFilters: Filters, isRefreshing = false) => {
     setLoading(true);
+    if (!isRefreshing) {
+      setPosts([]);
+    }
     try {
       const fetchedPosts = await fetchPostsFromAPI({
         tab: currentFilters.tab,
@@ -57,12 +61,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Serialize filters to a stable string key so the effect only re-runs
+  // when an actual filter value changes, not on object reference changes.
+  const filtersKey = `${filters.tab}|${filters.location ?? ''}|${filters.type}|${filters.search ?? ''}`;
 
   // Reload posts when filters change
   useEffect(() => {
     loadPosts(filters);
-  }, [filters]);
+  }, [filtersKey]);
+
+  const refreshPosts = useCallback(async () => {
+    await loadPosts(filters, true);
+  }, [filters, loadPosts]);
 
   const setTab = (tab: FeedTab) => {
     setFilters(prev => ({ ...prev, tab }));
@@ -89,9 +101,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const refreshPosts = async () => {
-    await loadPosts(filters);
-  };
 
   const handleLike = async (postId: string) => {
     // Optimistic update
@@ -224,6 +233,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    // Optimistic UI update
+    setPosts(prev => prev.filter(p => p.id !== postId));
+
+    try {
+      const res = await deletePostAPI(postId);
+      if (!res.success) {
+        console.log('Post deletion failed on server, reloading feed');
+        await refreshPosts();
+      }
+    } catch (e) {
+      console.error('Failed to delete post:', e);
+      await refreshPosts();
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -240,6 +265,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         handleAddComment,
         handleAddPost,
         refreshPosts,
+        handleDeletePost,
         createPostVisible,
         setCreatePostVisible
       }}

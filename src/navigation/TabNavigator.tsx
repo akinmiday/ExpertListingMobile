@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home, Search, PlusSquare, Bell, User } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
 import { useApp } from '../context/AppContext';
-import FeedScreen from '../screens/FeedScreen';
+import DrawerNavigator from './DrawerNavigator';
 import CreatePostScreen from '../screens/CreatePostScreen';
 import SearchScreen from '../screens/SearchScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
@@ -22,7 +22,7 @@ export default function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        header: () => <Header />,
+        header: () => <Header routeName={route.name} />,
         tabBarActiveTintColor: Colors.navActive,
         tabBarInactiveTintColor: Colors.navInactive,
         tabBarStyle: {
@@ -40,10 +40,11 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="Feed"
-        component={FeedScreen}
+        component={DrawerNavigator}
         options={{
           tabBarLabel: 'Feed',
           tabBarIcon: ({ color, size }) => <Home size={22} color={color} />,
+          headerShown: false,
         }}
       />
       <Tab.Screen

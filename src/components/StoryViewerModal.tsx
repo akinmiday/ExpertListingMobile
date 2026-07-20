@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Modal, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View, Modal, TouchableOpacity, Animated, Dimensions, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { X } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
@@ -25,13 +25,19 @@ const STORY_IMAGES: Record<string, string> = {
 };
 
 export default function StoryViewerModal({ userId, visible, onClose, onNext, onPrev }: StoryViewerModalProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   const storyUser = STORIES_DATA.find((u) => u.id === userId);
   const storyImage = userId ? STORY_IMAGES[userId] || STORY_IMAGES['1'] : STORY_IMAGES['1'];
 
+  // Reset image loaded status on user change
   useEffect(() => {
-    if (visible && userId) {
+    setImageLoaded(false);
+  }, [userId]);
+
+  useEffect(() => {
+    if (visible && userId && imageLoaded) {
       // Reset animation
       progressAnim.setValue(0);
       
@@ -45,12 +51,15 @@ export default function StoryViewerModal({ userId, visible, onClose, onNext, onP
           onNext();
         }
       });
+    } else {
+      progressAnim.setValue(0);
+      progressAnim.stopAnimation();
     }
 
     return () => {
       progressAnim.stopAnimation();
     };
-  }, [visible, userId]);
+  }, [visible, userId, imageLoaded]);
 
   if (!storyUser) return null;
 
@@ -63,7 +72,19 @@ export default function StoryViewerModal({ userId, visible, onClose, onNext, onP
     >
       <View style={styles.container}>
         {/* Fullscreen Story Image */}
-        <Image source={{ uri: storyImage }} style={styles.storyImage} contentFit="cover" />
+        <Image 
+          source={{ uri: storyImage }} 
+          style={styles.storyImage} 
+          contentFit="cover"
+          onLoad={() => setImageLoaded(true)}
+        />
+
+        {/* Loading overlay with spinner */}
+        {!imageLoaded && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        )}
 
         {/* Tap Targets - split 35/65 screen width */}
         <TouchableOpacity style={styles.tapTargetLeft} onPress={onPrev} activeOpacity={1} />
@@ -194,5 +215,12 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 4,
+  },
+  loadingContainer: {
+    ...StyleSheet.absoluteFill,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    zIndex: 1,
   },
 });

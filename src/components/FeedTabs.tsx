@@ -7,8 +7,7 @@ export default function FeedTabs() {
   const { filters, setTab } = useApp();
   const tabs: Exclude<FeedTab, 'All'>[] = ['Property', 'General', 'Request'];
 
-  // Default to first tab 'Property' if 'All' is active (or handle 'All' as Property)
-  const activeTab = filters.tab === 'All' ? 'Property' : filters.tab;
+  const activeTab = filters.tab;
 
   return (
     <View style={styles.container}>

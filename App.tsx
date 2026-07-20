@@ -5,8 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppProvider } from './src/context/AppContext';
-import DrawerNavigator from './src/navigation/DrawerNavigator';
+import TabNavigator from './src/navigation/TabNavigator';
 import { Colors } from './src/theme/colors';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const CustomTheme = {
   ...DarkTheme,
@@ -24,12 +25,14 @@ const CustomTheme = {
 export default function App() {
   return (
     <GestureHandlerRootView style={styles.container}>
-      <AppProvider>
-        <NavigationContainer theme={CustomTheme}>
-          <DrawerNavigator />
-          <StatusBar style="light" />
-        </NavigationContainer>
-      </AppProvider>
+      <SafeAreaProvider>
+        <AppProvider>
+          <NavigationContainer theme={CustomTheme}>
+            <TabNavigator />
+            <StatusBar style="light" />
+          </NavigationContainer>
+        </AppProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

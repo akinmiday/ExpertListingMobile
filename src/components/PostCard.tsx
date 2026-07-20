@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator, Modal, Alert } from 'react-native';
 import { Image } from 'expo-image';
-import { Heart, MessageCircle, Send, Bookmark, MapPin, MoreHorizontal, Play, Tag, ChevronRight } from 'lucide-react-native';
+import { Heart, MessageCircle, Send, Bookmark, MapPin, MoreHorizontal, Play, Tag, ChevronRight, Phone, Calendar, Copy, AlertTriangle, Trash2 } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
 import { Post } from '../api/client';
 import { useApp } from '../context/AppContext';
@@ -15,11 +15,78 @@ interface PostCardProps {
 }
 
 function PostCard({ post, onOpenComments }: PostCardProps) {
-  const { handleLike } = useApp();
+  const { handleLike, handleDeletePost } = useApp();
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(post.bookmarked || false);
+  const [bookmarksCount, setBookmarksCount] = useState(post.bookmarksCount || 0);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [actionsVisible, setActionsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsBookmarked(post.bookmarked || false);
+    setBookmarksCount(post.bookmarksCount || 0);
+  }, [post.bookmarked, post.bookmarksCount]);
+
+  const handleCopyLink = () => {
+    setActionsVisible(false);
+    setTimeout(() => {
+      Alert.alert('Link Copied', 'The link to this post has been copied to your clipboard!');
+    }, 300);
+  };
+
+  const handleShare = () => {
+    setActionsVisible(false);
+    setTimeout(() => {
+      Alert.alert('Shared', 'This post has been successfully shared!');
+    }, 300);
+  };
+
+  const handleReport = () => {
+    setActionsVisible(false);
+    setTimeout(() => {
+      Alert.alert('Post Reported', 'Thank you for keeping our community safe. We will review this post.');
+    }, 300);
+  };
+
+  const handleContactAgent = () => {
+    setActionsVisible(false);
+    setTimeout(() => {
+      Alert.alert(
+        `Contact ${post.user.name}`,
+        `Role: ${post.user.role}\nPhone: +234 803 123 4567\nEmail: contact@expertlisting.com`,
+        [{ text: 'Close', style: 'cancel' }]
+      );
+    }, 300);
+  };
+
+  const handleRequestInspection = () => {
+    setActionsVisible(false);
+    setTimeout(() => {
+      Alert.alert(
+        'Inspection Requested',
+        'Your tour request has been sent to the agent. They will contact you shortly to schedule the date.'
+      );
+    }, 300);
+  };
+
+  const handleDeletePress = () => {
+    setActionsVisible(false);
+    setTimeout(() => {
+      Alert.alert(
+        'Delete Post',
+        'Are you sure you want to delete this listing?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Delete', 
+            style: 'destructive', 
+            onPress: () => handleDeletePost(post.id) 
+          }
+        ]
+      );
+    }, 300);
+  };
 
   const hasMedia = post.media && post.media.length > 0;
   const isVideo = hasMedia && post.media![0].type === 'video';
@@ -43,7 +110,13 @@ function PostCard({ post, onOpenComments }: PostCardProps) {
   };
 
   const toggleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
+    if (isBookmarked) {
+      setIsBookmarked(false);
+      setBookmarksCount(prev => Math.max(0, prev - 1));
+    } else {
+      setIsBookmarked(true);
+      setBookmarksCount(prev => prev + 1);
+    }
   };
 
   // Profile bubbles for "Liked by"
@@ -103,7 +176,11 @@ function PostCard({ post, onOpenComments }: PostCardProps) {
             </Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.moreButton} activeOpacity={0.6}>
+        <TouchableOpacity 
+          style={styles.moreButton} 
+          activeOpacity={0.6}
+          onPress={() => setActionsVisible(true)}
+        >
           <MoreHorizontal size={20} color={Colors.textMuted} />
         </TouchableOpacity>
       </View>
@@ -278,14 +355,93 @@ function PostCard({ post, onOpenComments }: PostCardProps) {
             color={isBookmarked ? Colors.primary : Colors.text} 
             fill={isBookmarked ? Colors.primary : 'transparent'} 
           />
-          {post.bookmarksCount !== undefined && post.bookmarksCount > 0 && (
-            <Text style={styles.actionCount}>{post.bookmarksCount}</Text>
+          {bookmarksCount > 0 && (
+            <Text style={styles.actionCount}>{bookmarksCount}</Text>
           )}
         </TouchableOpacity>
       </View>
 
       {/* Liked-by status text */}
       {renderLikedByAvatars()}
+
+      {/* Three Dots Actions Modal */}
+      {actionsVisible && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={actionsVisible}
+          onRequestClose={() => setActionsVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <TouchableOpacity 
+              style={styles.modalBackdrop} 
+              activeOpacity={1} 
+              onPress={() => setActionsVisible(false)} 
+            />
+            <View style={styles.modalContent}>
+              <View style={styles.modalIndicator} />
+              <Text style={styles.modalTitle}>Options</Text>
+
+              {/* Conditionally render Contact Agent */}
+              {(post.user.role === 'Agent' || post.user.role === 'Broker' || post.user.role === 'Developer') && (
+                <TouchableOpacity style={styles.modalItem} onPress={handleContactAgent}>
+                  <View style={styles.modalItemLeft}>
+                    <Phone size={18} color={Colors.text} />
+                    <Text style={styles.modalItemText}>Contact Agent</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Conditionally render Request Inspection */}
+              {post.type === 'Property' && (
+                <TouchableOpacity style={styles.modalItem} onPress={handleRequestInspection}>
+                  <View style={styles.modalItemLeft}>
+                    <Calendar size={18} color={Colors.text} />
+                    <Text style={styles.modalItemText}>Request Tour / Inspection</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Standard actions */}
+              <TouchableOpacity style={styles.modalItem} onPress={handleCopyLink}>
+                <View style={styles.modalItemLeft}>
+                  <Copy size={18} color={Colors.text} />
+                  <Text style={styles.modalItemText}>Copy Link</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.modalItem} onPress={handleShare}>
+                <View style={styles.modalItemLeft}>
+                  <Send size={18} color={Colors.text} />
+                  <Text style={styles.modalItemText}>Share Post</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.modalItem} onPress={handleReport}>
+                <View style={styles.modalItemLeft}>
+                  <AlertTriangle size={18} color="#F59E0B" />
+                  <Text style={[styles.modalItemText, { color: '#F59E0B' }]}>Report Post</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Conditionally render Delete Post */}
+              {(post.userId === 'currentUser' || post.user.id === 'currentUser') && (
+                <TouchableOpacity style={styles.modalItem} onPress={handleDeletePress}>
+                  <View style={styles.modalItemLeft}>
+                    <Trash2 size={18} color="#EF4444" />
+                    <Text style={[styles.modalItemText, { color: '#EF4444', fontWeight: 'bold' }]}>Delete Post</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Cancel Button */}
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setActionsVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -571,6 +727,75 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '30%',
     backgroundColor: Colors.primary,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  modalContent: {
+    backgroundColor: Colors.modalBg,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderBottomWidth: 0,
+  },
+  modalIndicator: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  modalTitle: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  modalItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  modalItemText: {
+    color: Colors.text,
+    fontSize: 15,
+  },
+  cancelButton: {
+    backgroundColor: Colors.inputBg,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  cancelButtonText: {
+    color: Colors.text,
+    fontSize: 15,
+    fontWeight: 'bold',
   },
 });
 

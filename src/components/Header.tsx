@@ -7,9 +7,15 @@ import { Colors } from '../theme/colors';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { useNavigation } from '@react-navigation/native';
 
-export default function Header() {
+interface HeaderProps {
+  routeName?: string;
+}
+
+export default function Header({ routeName }: HeaderProps) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<DrawerNavigationProp<any>>();
+
+  const showMenu = routeName === 'Feed';
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
@@ -25,16 +31,17 @@ export default function Header() {
 
         {/* Action Buttons */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.signInButton} activeOpacity={0.7}>
-            <Text style={styles.signInText}>Sign In</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.menuButton} 
-            activeOpacity={0.7}
-            onPress={() => navigation.openDrawer()}
-          >
-            <Menu size={24} color={Colors.text} strokeWidth={2} />
-          </TouchableOpacity>
+          {showMenu ? (
+            <TouchableOpacity 
+              style={styles.menuButton} 
+              activeOpacity={0.7}
+              onPress={() => navigation.openDrawer()}
+            >
+              <Menu size={24} color={Colors.text} strokeWidth={2} />
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 32 }} />
+          )}
         </View>
       </View>
     </View>
@@ -68,15 +75,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-  },
-  signInButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  signInText: {
-    color: Colors.textMuted,
-    fontSize: 14,
-    fontWeight: '600',
   },
   menuButton: {
     padding: 4,

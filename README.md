@@ -155,10 +155,35 @@ src/
 | Authentication | Out of scope. The current user is always `"currentUser"`. |
 | Email verification | Out of scope. |
 | Payments | Out of scope. |
-| Push notifications | Out of scope. The Notifications screen is a placeholder. |
-| Search screen | Out of scope. The backend supports search, but the UI is not built. |
-| Profile screen | Out of scope. |
+| Push notifications | Out of scope. Notifications are simulated locally. |
 | Image and video upload | Out of scope. Media is stored as URL strings. |
 | FlashList | Not used. FlatList with React.memo is enough for this scale. |
 | WebSocket updates | Not built. Likes and comments return updated counts on each request. |
 | Offline storage | Not built. The 5-second cache and mock fallback reduce the effect of network failures. |
+
+---
+
+## Design Improvisations & Mock Screens
+
+Several features and screens that were not explicitly detailed in the Figma file were implemented and improvised to ensure the mobile app feels complete and robust:
+
+### 1. The Sidebar (Drawer)
+- **Problem**: There was no sidebar layout in the Figma file.
+- **Solution**: We created a custom drawer sidebar containing:
+  - **Feed Category selector**: Easily switch tab categories.
+  - **Listing Type filter**: Fast filtering for For Rent or For Sale properties.
+  - **Trending Locations**: Clicking a location filters the main feed dynamically.
+  - **Hot Requests & Top Communities**: Interactive sidebar items that close the drawer and update context filters where matching.
+- **Nesting**: Improvised by nesting the `DrawerNavigator` inside the `Feed` screen of the `TabNavigator` so that the bottom tab bar and header navigation are preserved and the drawer fits "within the app" boundaries.
+
+### 2. Search Screen
+- A full-featured search interface containing a search input bar, trending search tag shortcuts, and debounced text inputs that call the backend dynamically to fetch matching user names, listing details, or location matches.
+
+### 3. List Screen (Create Post)
+- A complete visual form screen for listing property, general posts, or requests. Contains form validation, type toggle tabs, location fields, and handles direct API integration with `POST /posts`.
+
+### 4. Notifications Screen
+- Displays a list of simulated notifications (likes, comments, new listings, follows) with mark-as-read toggles, visual status badges, and a "Clear All" alert verification flow.
+
+### 5. Profile Screen
+- A dashboard screen for settings, user roles, simulated passwords change modals, terms and conditions view overlays, and logout safety prompts.

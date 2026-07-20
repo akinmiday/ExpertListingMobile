@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { STORIES_DATA } from '../api/client';
 import StoryBubble from '../components/StoryBubble';
 import PostCard from '../components/PostCard';
+import PostCardSkeleton from '../components/PostCardSkeleton';
 import CommentsModal from '../components/CommentsModal';
 import StoryViewerModal from '../components/StoryViewerModal';
 import CreateFeedPostModal from '../components/CreateFeedPostModal';
@@ -75,36 +76,39 @@ export default function FeedScreen() {
     </View>
   );
 
+  const displayData = (loading && !refreshing && posts.length === 0)
+    ? ([{ id: 's1' }, { id: 's2' }, { id: 's3' }] as any[])
+    : posts;
+
   return (
     <View style={styles.container}>
-      {loading && !refreshing ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      ) : (
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={renderHeader}
-          renderItem={({ item }) => (
-            <PostCard post={item} onOpenComments={handleOpenComments} />
-          )}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={Colors.primary}
-              colors={[Colors.primary]}
-            />
+      <FlatList
+        data={displayData}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        renderItem={({ item }) => {
+          if (item.id.startsWith('s')) {
+            return <PostCardSkeleton />;
           }
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
+          return <PostCard post={item} onOpenComments={handleOpenComments} />;
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          !loading ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No posts match this filter.</Text>
             </View>
-          }
-        />
-      )}
+          ) : null
+        }
+      />
 
       {/* Floating Action Button (FAB) */}
       <TouchableOpacity 
