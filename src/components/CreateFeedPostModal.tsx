@@ -47,7 +47,7 @@ export default function CreateFeedPostModal({ visible, onClose }: CreateFeedPost
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         style={styles.modalOverlay}
       >
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
@@ -113,7 +113,7 @@ export default function CreateFeedPostModal({ visible, onClose }: CreateFeedPost
           </ScrollView>
 
           {/* Action button */}
-          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.8}>
               <Send size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
               <Text style={styles.submitButtonText}>Publish Post</Text>

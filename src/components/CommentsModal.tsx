@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Modal, TouchableOpacity, FlatList, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, Modal, TouchableOpacity, FlatList, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Keyboard } from 'react-native';
 import { Image } from 'expo-image';
 import { X, Send } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
@@ -19,6 +19,8 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     if (visible && postId) {
@@ -27,6 +29,22 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
       setComments([]);
     }
   }, [visible, postId]);
+
+  // Listen for keyboard show/hide to adjust bottom padding on Android
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const loadComments = async () => {
     if (!postId) return;
@@ -42,8 +60,16 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
     if (addedComment) {
       setComments(prev => [...prev, addedComment]);
       setCommentText('');
+      // Scroll to bottom after adding a comment
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
   };
+
+  // Extra bottom padding: when keyboard is up we don't need nav-bar padding,
+  // when keyboard is down we need to clear the Android nav bar / iOS home indicator.
+  const bottomSafePadding = keyboardVisible ? 8 : Math.max(insets.bottom, 24);
 
   return (
     <Modal
@@ -53,8 +79,9 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         style={styles.modalOverlay}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         {/* Click outside to close */}
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
@@ -78,9 +105,11 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
             </View>
           ) : (
             <FlatList
+              ref={flatListRef}
               data={comments}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
+              keyboardShouldPersistTaps="handled"
               renderItem={({ item }) => (
                 <View style={styles.commentRow}>
                   <Image source={{ uri: item.user.avatar }} style={styles.commentAvatar} />
@@ -103,7 +132,7 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
           )}
 
           {/* Input Bar */}
-          <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+          <View style={[styles.inputContainer, { paddingBottom: bottomSafePadding }]}>
             <TextInput
               style={styles.input}
               placeholder="Add a comment..."

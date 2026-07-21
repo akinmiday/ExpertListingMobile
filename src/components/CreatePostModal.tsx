@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Modal, TouchableOpacity, TextInput, KeyboardAvo
 import { X, MapPin, Tag, Check, Image as ImageIcon } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
 import { useApp, FeedTab } from '../context/AppContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CreatePostModalProps {
   visible: boolean;
@@ -17,6 +18,7 @@ const PRESET_IMAGES = [
 
 export default function CreatePostModal({ visible, onClose }: CreatePostModalProps) {
   const { handleAddPost } = useApp();
+  const insets = useSafeAreaInsets();
 
   const [body, setBody] = useState('');
   const [location, setLocation] = useState('Lekki Phase 1, Lagos');
@@ -57,7 +59,7 @@ export default function CreatePostModal({ visible, onClose }: CreatePostModalPro
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="padding"
         style={styles.modalOverlay}
       >
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
@@ -180,7 +182,7 @@ export default function CreatePostModal({ visible, onClose }: CreatePostModalPro
           </ScrollView>
 
           {/* Action button */}
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.8}>
               <Text style={styles.submitButtonText}>Publish Listing</Text>
             </TouchableOpacity>
