@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Modal, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { User, Lock, FileText, ShieldAlert, LogOut, ChevronRight, X, Save } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const [changePasswordVisible, setChangePasswordVisible] = useState(false);
   const [termsVisible, setTermsVisible] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
@@ -128,7 +130,7 @@ export default function ProfileScreen() {
         onRequestClose={() => setChangePasswordVisible(false)}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.modalOverlay}
         >
           <TouchableOpacity 
@@ -136,7 +138,7 @@ export default function ProfileScreen() {
             activeOpacity={1} 
             onPress={() => setChangePasswordVisible(false)} 
           />
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 20) }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Change Password</Text>
               <TouchableOpacity onPress={() => setChangePasswordVisible(false)}>
@@ -201,7 +203,7 @@ export default function ProfileScreen() {
             activeOpacity={1} 
             onPress={() => setTermsVisible(false)} 
           />
-          <View style={[styles.modalContent, styles.fullModalContent]}>
+          <View style={[styles.modalContent, styles.fullModalContent, { paddingBottom: Math.max(insets.bottom, 20) }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Terms & Conditions</Text>
               <TouchableOpacity onPress={() => setTermsVisible(false)}>
@@ -239,7 +241,7 @@ export default function ProfileScreen() {
             activeOpacity={1} 
             onPress={() => setPrivacyVisible(false)} 
           />
-          <View style={[styles.modalContent, styles.fullModalContent]}>
+          <View style={[styles.modalContent, styles.fullModalContent, { paddingBottom: Math.max(insets.bottom, 20) }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Privacy Policy</Text>
               <TouchableOpacity onPress={() => setPrivacyVisible(false)}>

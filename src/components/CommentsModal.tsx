@@ -5,6 +5,7 @@ import { X, Send } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
 import { Comment } from '../api/client';
 import { useApp } from '../context/AppContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CommentsModalProps {
   postId: string | null;
@@ -14,6 +15,7 @@ interface CommentsModalProps {
 
 export default function CommentsModal({ postId, visible, onClose }: CommentsModalProps) {
   const { handleLoadComments, handleAddComment } = useApp();
+  const insets = useSafeAreaInsets();
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,7 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.modalOverlay}
       >
         {/* Click outside to close */}
@@ -101,7 +103,7 @@ export default function CommentsModal({ postId, visible, onClose }: CommentsModa
           )}
 
           {/* Input Bar */}
-          <View style={styles.inputContainer}>
+          <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
             <TextInput
               style={styles.input}
               placeholder="Add a comment..."

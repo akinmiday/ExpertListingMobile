@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Modal, TouchableOpacity, TextInput, KeyboardAvo
 import { X, MapPin, Send } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
 import { useApp, FeedTab } from '../context/AppContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CreateFeedPostModalProps {
   visible: boolean;
@@ -11,6 +12,7 @@ interface CreateFeedPostModalProps {
 
 export default function CreateFeedPostModal({ visible, onClose }: CreateFeedPostModalProps) {
   const { handleAddPost } = useApp();
+  const insets = useSafeAreaInsets();
 
   const [body, setBody] = useState('');
   const [location, setLocation] = useState('Lekki Phase 1, Lagos');
@@ -45,7 +47,7 @@ export default function CreateFeedPostModal({ visible, onClose }: CreateFeedPost
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.modalOverlay}
       >
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
@@ -111,7 +113,7 @@ export default function CreateFeedPostModal({ visible, onClose }: CreateFeedPost
           </ScrollView>
 
           {/* Action button */}
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.8}>
               <Send size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
               <Text style={styles.submitButtonText}>Publish Post</Text>

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react-native';
 import { Colors } from '../theme/colors';
 import { useApp } from '../context/AppContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -32,6 +33,7 @@ const LOCATIONS = [
 export default function CreatePostScreen() {
   const { handleAddPost } = useApp();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   const [body, setBody] = useState('');
   const [location, setLocation] = useState('Lekki Phase 1, Lagos');
@@ -396,7 +398,7 @@ export default function CreatePostScreen() {
       </ScrollView>
 
       {/* Sticky Submit Button */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         <Animated.View style={{ transform: [{ scale: submitScale }], flex: 1 }}>
           <TouchableOpacity
             style={styles.submitButton}
@@ -774,7 +776,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 20,
     paddingVertical: 14,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 14,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     backgroundColor: Colors.background,
