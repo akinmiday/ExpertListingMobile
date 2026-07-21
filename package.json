@@ -7,6 +7,7 @@
     "@react-navigation/drawer": "^7.13.2",
     "@react-navigation/native": "^7.3.11",
     "expo": "~57.0.7",
+    "expo-build-properties": "~57.0.6",
     "expo-image": "~57.0.1",
     "expo-status-bar": "~57.0.1",
     "lucide-react-native": "^1.25.0",

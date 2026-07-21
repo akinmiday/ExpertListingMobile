@@ -189,11 +189,15 @@ The `eas.json` file is configured with the following profiles:
 - **`preview`**: Generates a direct installable `.apk` file for testing on physical devices or emulators, and defaults to standard local API endpoints (`http://localhost:3000`).
 - **`production`**: Generates a direct installable `.apk` file for release builds and links to your production API endpoints.
 
-### 2. Environment Variables Configuration
+### 2. ProGuard & Optimization
+- **`expo-build-properties`**: Configured inside the `plugins` array of `app.json` with `"enableProguardInReleaseBuilds": true`. This instructs the EAS compiler to run **R8/ProGuard** code shrinking, obfuscating, and optimization algorithms on release builds.
+- **`versionCode`**: Configured inside the `android` block of `app.json` (set to `1`) as required by Google Play to identify newer releases.
+
+### 3. Environment Variables Configuration
 The `eas.json` contains a specific `env` configuration to embed `EXPO_PUBLIC_BACKEND_URL` directly into the built binary during EAS compilation:
 - To customize the production backend endpoint, edit the `EXPO_PUBLIC_BACKEND_URL` value inside the `"production"` block of your `eas.json` before building.
 
-### 3. Run EAS Build Commands
+### 4. Run EAS Build Commands
 Make sure you have global `eas-cli` installed and are logged in, then run:
 - **To build a preview Android APK**:
   ```bash
