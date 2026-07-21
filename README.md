@@ -153,9 +153,9 @@ src/
 
 ---
 
-## Design Improvisations & Mock Screens
+## Design Improvisations & Implementation Decisions
 
-Several features and screens that were not explicitly detailed in the Figma file were implemented and improvised to ensure the mobile app feels complete and robust:
+The Figma file only provided visual styles for the main feed (specifically the Property tab). The designs, layouts, and interactive behaviors for all other tabs (General and Request) and screens (Search, List/Create Post, Notifications, and Profile) were custom-designed and implemented to match the aesthetics, color palette, and typography of the main feed:
 
 ### 1. The Sidebar (Drawer)
 - **Problem**: There was no sidebar layout in the Figma file.
